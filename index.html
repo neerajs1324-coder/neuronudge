@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NeuroNudge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EEF1F8;--surface:#FFFFFF;--ink:#161A33;--muted:#5A6082;--line:#D7DBEA;--soft:#E2E6F3;
+  --accent:#3B4CCA;--accent-ink:#FFFFFF;--hi:#FFD23F;--mark:#FFD23F;--danger:#C62F3A;--ok:#1F8F62;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11132A;--surface:#1B1E3B;--ink:#EDEFFB;--muted:#A2A8CB;--line:#2D3158;--soft:#252948;
+    --accent:#8E98FF;--accent-ink:#11132A;--mark:rgba(255,210,63,.38);--danger:#FF6B74;--ok:#4CD49A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11132A;--surface:#1B1E3B;--ink:#EDEFFB;--muted:#A2A8CB;--line:#2D3158;--soft:#252948;
+  --accent:#8E98FF;--accent-ink:#11132A;--mark:rgba(255,210,63,.38);--danger:#FF6B74;--ok:#4CD49A;
+  color-scheme:dark;
+}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.5}
+:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-inner{max-width:980px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px}
+.logo{font-weight:800;font-size:1.3rem;letter-spacing:-.02em;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.logo-dot{width:14px;height:14px;border-radius:50%;background:var(--hi);box-shadow:0 0 0 3px var(--accent)}
+nav{display:flex;gap:4px;overflow-x:auto;flex:1}
+.tab{border:0;background:none;color:var(--muted);font:inherit;font-weight:700;padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab.active{background:var(--ink);color:var(--bg)}
+.icon-btn{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;width:40px;height:40px;cursor:pointer;font-size:1.1rem;flex:none}
+
+main{max-width:980px;margin:0 auto;padding:28px 20px 48px}
+h2{font-size:1.35rem;letter-spacing:-.02em;margin:32px 0 12px}
+section>h2:first-child{margin-top:0}
+.muted{color:var(--muted)}
+
+.hero{padding:4px 0 28px;border-bottom:2px solid var(--ink);margin-bottom:28px}
+.today{color:var(--muted);font-weight:600;margin:0}
+.hero-label{color:var(--accent);font-weight:700;margin:14px 0 0}
+.hero-title{font-size:clamp(2rem,5.5vw,3.6rem);line-height:1.04;letter-spacing:-.035em;margin:4px 0 10px;font-weight:800;overflow-wrap:anywhere}
+.countdown{display:flex;gap:22px;flex-wrap:wrap;margin-top:20px}
+.cd-unit{display:flex;align-items:baseline;gap:6px}
+.cd-num{font-size:clamp(3rem,11vw,5.8rem);font-weight:800;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;padding:0 .06em;background:linear-gradient(transparent 52%,var(--mark) 52%,var(--mark) 88%,transparent 88%)}
+.cd-lab{color:var(--muted);font-weight:700}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:32px}
+.stat{background:var(--surface);padding:16px 18px}
+.stat b{display:block;font-size:2rem;font-weight:800;line-height:1.1;letter-spacing:-.02em}
+.stat span{color:var(--muted);font-size:.9rem}
+
+.cols{display:grid;grid-template-columns:1.6fr 1fr;gap:24px;align-items:start}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row-main{flex:1;min-width:0}
+.row-title{font-weight:700;overflow-wrap:anywhere}
+.row-meta{color:var(--muted);font-size:.88rem;display:flex;gap:10px;flex-wrap:wrap;align-items:center;overflow-wrap:anywhere}
+.done .row-title{text-decoration:line-through;color:var(--muted)}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);flex:none;cursor:pointer;margin:0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;padding:2px 10px 2px 8px;border-radius:999px;background:var(--soft);color:var(--ink)}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.due{font-weight:700}
+.due.late{color:var(--danger)}
+.due.soon{color:var(--accent)}
+.x{background:none;border:0;color:var(--muted);font-size:1.4rem;line-height:1;width:32px;height:32px;border-radius:8px;cursor:pointer;flex:none}
+.x:hover{background:var(--soft);color:var(--danger)}
+
+.form{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:24px;padding:18px}
+.stack{display:flex;flex-direction:column;gap:12px;padding:18px}
+.field{display:flex;flex-direction:column;gap:4px;flex:1 1 180px;min-width:0}
+.field.grow{flex:2 1 240px}
+.field>label,.field>.lbl{font-size:.85rem;font-weight:700;color:var(--muted)}
+input[type=text],input[type=datetime-local],select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+textarea{resize:vertical;min-height:72px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+.btn{font:inherit;font-weight:700;border:1.5px solid var(--accent);border-radius:10px;padding:10px 16px;cursor:pointer;background:var(--accent);color:var(--accent-ink);white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.danger{background:transparent;color:var(--danger);border-color:currentColor}
+.btn.sm{padding:6px 12px;font-size:.9rem}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions.center{justify-content:center}
+
+.swatches{display:flex;gap:8px;flex-wrap:wrap;padding:6px 0}
+.swatch{position:relative}
+.swatch input{position:absolute;opacity:0;width:28px;height:28px;margin:0}
+.swatch span{display:block;width:28px;height:28px;border-radius:50%;background:var(--c);border:3px solid var(--surface);box-shadow:0 0 0 2px transparent;cursor:pointer}
+.swatch input:checked+span{box-shadow:0 0 0 2px var(--ink)}
+.swatch input:focus-visible+span{outline:3px solid var(--hi);outline-offset:3px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.tile{text-align:left;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-top:8px solid var(--c);border-radius:14px;padding:16px 18px;cursor:pointer}
+.tile:hover{border-color:var(--ink);border-top-color:var(--c)}
+.tile h3{margin:0 0 6px;font-size:1.2rem;letter-spacing:-.01em;overflow-wrap:anywhere}
+.tile p{margin:0;color:var(--muted);font-size:.9rem;overflow-wrap:anywhere}
+
+.page-title{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-.03em;margin:0 0 18px;line-height:1.1;display:flex;align-items:center;gap:12px;overflow-wrap:anywhere}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.bar{width:12px;height:.9em;border-radius:4px;background:var(--c);display:inline-block;flex:none}
+.back{background:none;border:0;font:inherit;color:var(--muted);font-weight:700;padding:4px 0;margin-bottom:12px;cursor:pointer}
+.back:hover{color:var(--ink)}
+
+.dots{display:inline-flex;gap:3px;flex:none}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--ok)}
+
+.study-wrap{max-width:580px;margin:0 auto;text-align:center}
+.progress{height:6px;background:var(--soft);border-radius:999px;overflow:hidden;margin-top:8px}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.flip{perspective:1200px;cursor:pointer;margin:22px 0;border-radius:18px}
+.flip-inner{position:relative;min-height:280px;transition:transform .5s;transform-style:preserve-3d}
+.flip.flipped .flip-inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;align-items:center;justify-content:center;padding:44px 28px 28px;border-radius:18px;background:var(--surface);border:1px solid var(--line);font-size:clamp(1.15rem,3vw,1.5rem);font-weight:700;overflow:auto;overflow-wrap:anywhere}
+.face.back{transform:rotateY(180deg);background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.face small{position:absolute;top:14px;left:18px;font-size:.8rem;opacity:.65}
+.rate{display:flex;gap:10px;justify-content:center}
+.rate .btn{flex:1;max-width:160px}
+.hint{color:var(--muted);font-size:.9rem}
+
+.focus{text-align:center;max-width:580px;margin:0 auto}
+.focus .page-title{justify-content:center}
+.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:4px;gap:4px;margin-top:8px}
+.seg button{font:inherit;font-weight:700;border:0;background:none;color:var(--muted);padding:8px 20px;border-radius:999px;cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink)}
+.timer{font-size:clamp(4.5rem,19vw,9.5rem);font-weight:800;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums;margin:28px 0}
+
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty h3{color:var(--ink);font-size:1.35rem;margin:0 0 6px;letter-spacing:-.02em}
+.empty p{max-width:46ch;margin:0 auto}
+.empty .actions{justify-content:center;margin-top:20px}
+.empty.big{padding:72px 20px}
+.empty.big h3{font-size:clamp(2.2rem,6vw,3.4rem);font-weight:800;letter-spacing:-.035em;line-height:1.05;margin-bottom:12px}
+
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:calc(100% - 32px);text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+footer{max-width:980px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:.85rem;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+footer button{background:none;border:0;font:inherit;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}
+
+@media (max-width:640px){
+  .top-inner{flex-wrap:wrap;gap:10px}
+  .logo{flex:1}
+  nav{order:3;flex-basis:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  .flip-inner,.progress i,#toast{transition:none}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="logo"><span class="logo-dot"></span>NeuroNudge</div>
+    <nav aria-label="Main">
+      <button class="tab" data-act="go" data-to="dash">Today</button>
+      <button class="tab" data-act="go" data-to="classes">Classes</button>
+      <button class="tab" data-act="go" data-to="decks">Flashcards</button>
+      <button class="tab" data-act="go" data-to="focus">Focus</button>
+    </nav>
+    <button class="icon-btn" id="themeBtn" data-act="theme" aria-label="Switch theme">🌙</button>
+  </div>
+</header>
+<main id="main"></main>
+<footer>
+  <span>Your data is saved in this browser.</span>
+  <button data-act="wipe">Erase all data</button>
+</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const KEY = 'neuronudge-v1';
+const COLORS = ['#FF6B6B', '#FFA62B', '#2EC4B6', '#3B82F6', '#8B5CF6', '#EC4899', '#22A45D', '#64748B'];
+const DAY = 86400000;
+// days until a card comes back, by mastery level 0 to 5
+const INTERVALS = [0, 1, 3, 7, 14, 30];
+
+function blank() {
+  return { classes: [], assignments: [], decks: [], cards: [], streak: { last: null, count: 0 }, theme: null, focusSessions: 0 };
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return Object.assign(blank(), JSON.parse(raw));
+  } catch (e) {}
+  return blank();
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+}
+
+let S = load();
+let view = { name: 'dash' };
+
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const dayKey = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const cls = id => S.classes.find(c => c.id === id);
+const byDue = (a, b) => new Date(a.due) - new Date(b.due);
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const dueCards = deckId => S.cards.filter(c => (!deckId || c.deckId === deckId) && c.dueAt <= Date.now());
+
+function chip(c) {
+  return c ? `<span class="chip" style="--c:${c.color}"><i></i>${esc(c.name)}</span>` : '';
+}
+
+function streak() {
+  const t = dayKey(new Date()), y = dayKey(new Date(Date.now() - DAY));
+  return (S.streak.last === t || S.streak.last === y) ? S.streak.count : 0;
+}
+function bumpStreak() {
+  const t = dayKey(new Date()), y = dayKey(new Date(Date.now() - DAY));
+  if (S.streak.last === t) return;
+  S.streak.count = S.streak.last === y ? S.streak.count + 1 : 1;
+  S.streak.last = t;
+  save();
+}
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+function dueInfo(iso) {
+  const diff = new Date(iso) - Date.now();
+  if (diff < 0) return { text: 'Overdue', cls: 'late' };
+  const hrs = diff / 3600000;
+  if (hrs < 1) return { text: `Due in ${Math.max(1, Math.round(diff / 60000))} min`, cls: 'soon' };
+  if (hrs < 24) return { text: `Due in ${Math.round(hrs)} hr`, cls: 'soon' };
+  const days = Math.round(hrs / 24);
+  return { text: days === 1 ? 'Due tomorrow' : `Due in ${days} days`, cls: days <= 2 ? 'soon' : '' };
+}
+function defaultDue() {
+  return dayKey(new Date(Date.now() + DAY)) + 'T23:59';
+}
+
+function countdown(iso) {
+  let ms = Math.max(0, new Date(iso) - Date.now());
+  const d = Math.floor(ms / DAY); ms -= d * DAY;
+  const h = Math.floor(ms / 3600000); ms -= h * 3600000;
+  const m = Math.floor(ms / 60000);
+  const unit = (n, label) => `<div class="cd-unit"><span class="cd-num">${n}</span><span class="cd-lab">${label}</span></div>`;
+  return unit(d, d === 1 ? 'day' : 'days') + unit(h, h === 1 ? 'hr' : 'hrs') + unit(m, 'min');
+}
+
+function classOptions(sel, allowNone) {
+  return (allowNone ? '<option value="">No class</option>' : '') +
+    S.classes.map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+}
+
+function aRow(a, showClass = true) {
+  const info = dueInfo(a.due);
+  return `<div class="row ${a.done ? 'done' : ''}">
+    <input type="checkbox" ${a.done ? 'checked' : ''} data-act="toggle" data-id="${a.id}" aria-label="Mark ${esc(a.title)} done">
+    <div class="row-main">
+      <div class="row-title">${esc(a.title)}</div>
+      <div class="row-meta">${showClass ? chip(cls(a.classId)) : ''}<span>${fmtDate(a.due)}</span>${a.done ? '' : `<span class="due ${info.cls}">${info.text}</span>`}</div>
+    </div>
+    <button class="x" data-act="delAssign" data-id="${a.id}" aria-label="Delete ${esc(a.title)}">×</button>
+  </div>`;
+}
+
+function deckRow(d) {
+  const total = S.cards.filter(c => c.deckId === d.id).length;
+  const due = dueCards(d.id).length;
+  return `<div class="row">
+    <div class="row-main">
+      <div class="row-title">${esc(d.name)}</div>
+      <div class="row-meta">${chip(cls(d.classId))}<span>${plural(total, 'card')}</span>${due ? `<span class="due soon">${due} to review</span>` : ''}</div>
+    </div>
+    <button class="btn ghost sm" data-act="openDeck" data-id="${d.id}">Edit</button>
+    <button class="btn sm" data-act="study" data-id="${d.id}" ${total ? '' : 'disabled'}>Study</button>
+  </div>`;
+}
+
+/* views */
+
+function vDash() {
+  if (!S.classes.length) {
+    return `<div class="empty big">
+      <h3>Stay ahead of every class</h3>
+      <p>Add your classes, track what's due, and study with flashcards that come back right before you'd forget them.</p>
+      <div class="actions"><button class="btn" data-act="go" data-to="classes">Add your first class</button><button class="btn ghost" data-act="sample">Try it with sample data</button></div>
+    </div>`;
+  }
+  const now = Date.now();
+  const open = S.assignments.filter(a => !a.done).sort(byDue);
+  const next = open.find(a => new Date(a.due) > now);
+  const week = open.filter(a => new Date(a.due) - now < 7 * DAY).length;
+  const finished = S.assignments.filter(a => a.done).length;
+  const todayLine = new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+
+  const hero = next
+    ? `<section class="hero">
+        <p class="today">${todayLine}</p>
+        <p class="hero-label">Next up</p>
+        <h1 class="hero-title">${esc(next.title)}</h1>
+        <div class="row-meta">${chip(cls(next.classId))}<span>${fmtDate(next.due)}</span></div>
+        <div class="countdown" id="countdown" data-due="${next.due}">${countdown(next.due)}</div>
+      </section>`
+    : `<section class="hero">
+        <p class="today">${todayLine}</p>
+        <p class="hero-label">Next up</p>
+        <h1 class="hero-title">Nothing due. Enjoy it.</h1>
+      </section>`;
+
+  const stats = `<div class="stats">
+    <div class="stat"><b>${week}</b><span>due in the next 7 days</span></div>
+    <div class="stat"><b>${finished}</b><span>assignments finished</span></div>
+    <div class="stat"><b>${dueCards().length}</b><span>flashcards to review</span></div>
+    <div class="stat"><b>${streak()}</b><span>day study streak</span></div>
+  </div>`;
+
+  const list = open.slice(0, 8);
+  return hero + stats + `<div class="cols">
+    <section>
+      <h2>Coming up</h2>
+      <div class="panel">${list.length ? list.map(a => aRow(a)).join('') : '<p class="muted">All caught up.</p>'}</div>
+    </section>
+    <section>
+      <h2>Quick add</h2>
+      <form class="panel stack" data-form="quickAdd">
+        <div class="field"><label for="qa-t">Assignment</label><input id="qa-t" name="title" type="text" required placeholder="Problem set 4"></div>
+        <div class="field"><label for="qa-c">Class</label><select id="qa-c" name="classId">${classOptions()}</select></div>
+        <div class="field"><label for="qa-d">Due</label><input id="qa-d" name="due" type="datetime-local" required value="${defaultDue()}"></div>
+        <button class="btn">Add assignment</button>
+      </form>
+    </section>
+  </div>`;
+}
+
+function vClasses() {
+  const pick = S.classes.length % COLORS.length;
+  const swatches = COLORS.map((c, i) =>
+    `<label class="swatch" style="--c:${c}"><input type="radio" name="color" value="${c}" ${i === pick ? 'checked' : ''} aria-label="Color ${i + 1}"><span></span></label>`
+  ).join('');
+  const tiles = S.classes.map(c => {
+    const open = S.assignments.filter(a => a.classId === c.id && !a.done).sort(byDue);
+    const n = open[0];
+    return `<button class="tile" style="--c:${c.color}" data-act="openClass" data-id="${c.id}">
+      <h3>${esc(c.name)}</h3>
+      <p>${plural(open.length, 'open assignment')}</p>
+      <p>${n ? `Next: ${esc(n.title)} (${dueInfo(n.due).text.toLowerCase()})` : 'Nothing due'}</p>
+    </button>`;
+  }).join('');
+  return `<h1 class="page-title">Classes</h1>
+    <form class="panel form" data-form="addClass">
+      <div class="field grow"><label for="c-n">Class name</label><input id="c-n" name="name" type="text" required placeholder="EECS 183"></div>
+      <div class="field"><span class="lbl">Color</span><div class="swatches">${swatches}</div></div>
+      <button class="btn">Add class</button>
+    </form>
+    ${S.classes.length ? `<div class="grid">${tiles}</div>` : '<div class="empty"><h3>No classes yet</h3><p>Add one above to start tracking assignments.</p></div>'}`;
+}
+
+function vClass() {
+  const c = cls(view.id);
+  if (!c) { view = { name: 'classes' }; return vClasses(); }
+  const list = S.assignments.filter(a => a.classId === c.id).sort((a, b) => (a.done - b.done) || byDue(a, b));
+  const decks = S.decks.filter(d => d.classId === c.id);
+  return `<button class="back" data-act="go" data-to="classes">Back to classes</button>
+    <div class="page-head" style="--c:${c.color}">
+      <h1 class="page-title"><i class="bar"></i>${esc(c.name)}</h1>
+      <button class="btn danger sm" data-act="delClass" data-id="${c.id}">Delete class</button>
+    </div>
+    <form class="panel form" data-form="addAssign" data-class="${c.id}">
+      <div class="field grow"><label for="a-t">Assignment</label><input id="a-t" name="title" type="text" required placeholder="Essay draft"></div>
+      <div class="field"><label for="a-d">Due</label><input id="a-d" name="due" type="datetime-local" required value="${defaultDue()}"></div>
+      <button class="btn">Add assignment</button>
+    </form>
+    <h2>Assignments</h2>
+    <div class="panel">${list.length ? list.map(a => aRow(a, false)).join('') : '<p class="muted">No assignments yet. Add one above.</p>'}</div>
+    <h2>Flashcard decks</h2>
+    <div class="panel">${decks.length ? decks.map(deckRow).join('') : '<p class="muted">No decks for this class yet. Make one in Flashcards.</p>'}</div>`;
+}
+
+function vDecks() {
+  return `<h1 class="page-title">Flashcards</h1>
+    <form class="panel form" data-form="addDeck">
+      <div class="field grow"><label for="d-n">Deck name</label><input id="d-n" name="name" type="text" required placeholder="Midterm 1 terms"></div>
+      <div class="field"><label for="d-c">Class</label><select id="d-c" name="classId">${classOptions('', true)}</select></div>
+      <button class="btn">Create deck</button>
+    </form>
+    ${S.decks.length ? `<div class="panel">${S.decks.map(deckRow).join('')}</div>` : '<div class="empty"><h3>No decks yet</h3><p>Create a deck, add some cards, and hit Study.</p></div>'}`;
+}
+
+function vDeck() {
+  const d = S.decks.find(x => x.id === view.id);
+  if (!d) { view = { name: 'decks' }; return vDecks(); }
+  const cards = S.cards.filter(c => c.deckId === d.id);
+  const rows = cards.map(c => `<div class="row">
+      <div class="row-main"><div class="row-title">${esc(c.front)}</div><div class="row-meta"><span>${esc(c.back)}</span></div></div>
+      <span class="dots" title="Mastery ${c.level} of 5">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= c.level ? 'on' : ''}"></i>`).join('')}</span>
+      <button class="x" data-act="delCard" data-id="${c.id}" aria-label="Delete card">×</button>
+    </div>`).join('');
+  return `<button class="back" data-act="go" data-to="decks">Back to flashcards</button>
+    <div class="page-head">
+      <h1 class="page-title">${esc(d.name)}</h1>
+      <div class="actions">
+        <button class="btn" data-act="study" data-id="${d.id}" ${cards.length ? '' : 'disabled'}>Study</button>
+        <button class="btn danger" data-act="delDeck" data-id="${d.id}">Delete deck</button>
+      </div>
+    </div>
+    <form class="panel form" data-form="addCard" data-deck="${d.id}">
+      <div class="field grow"><label for="f">Front</label><textarea id="f" name="front" required placeholder="What is a p-value?"></textarea></div>
+      <div class="field grow"><label for="b">Back</label><textarea id="b" name="back" required placeholder="How likely results this extreme are if the null is true"></textarea></div>
+      <button class="btn">Add card</button>
+    </form>
+    <h2>${plural(cards.length, 'card')}</h2>
+    <div class="panel">${cards.length ? rows : '<p class="muted">Add your first card above. Tip: Ctrl+Enter adds it fast.</p>'}</div>`;
+}
+
+function startStudy(id, all = false) {
+  const pool = S.cards.filter(c => c.deckId === id);
+  const picked = all ? pool : pool.filter(c => c.dueAt <= Date.now());
+  const queue = picked.map(c => c.id).sort(() => Math.random() - 0.5);
+  nav({ name: 'study', id, queue, flipped: false, reviewed: 0, total: queue.length });
+}
+
+function vStudy() {
+  const d = S.decks.find(x => x.id === view.id);
+  const back = `<button class="back" data-act="openDeck" data-id="${view.id}">Back to deck</button>`;
+  if (!view.total) {
+    return back + `<div class="empty"><h3>Nothing to review right now</h3><p>Every card in this deck is scheduled for later.</p>
+      <div class="actions"><button class="btn" data-act="studyAll" data-id="${view.id}">Study all cards anyway</button></div></div>`;
+  }
+  if (!view.queue.length) {
+    return back + `<div class="empty"><h3>Deck finished</h3><p>You reviewed ${plural(view.reviewed, 'card')}. Cards you knew well will come back in a few days.</p>
+      <div class="actions"><button class="btn" data-act="go" data-to="decks">Back to flashcards</button></div></div>`;
+  }
+  const c = S.cards.find(x => x.id === view.queue[0]);
+  const pct = Math.round(100 * (view.total - view.queue.length) / view.total);
+  return back + `<div class="study-wrap">
+    <p class="muted">${esc(d.name)}, ${view.queue.length} left</p>
+    <div class="progress"><i style="width:${pct}%"></i></div>
+    <div class="flip ${view.flipped ? 'flipped' : ''}" data-act="flip" tabindex="0" role="button" aria-label="Flip card">
+      <div class="flip-inner">
+        <div class="face"><small>Question</small>${esc(c.front)}</div>
+        <div class="face back"><small>Answer</small>${esc(c.back)}</div>
+      </div>
+    </div>
+    <div class="rate" ${view.flipped ? '' : 'hidden'}>
+      <button class="btn ghost" data-act="rate" data-r="0">Again</button>
+      <button class="btn ghost" data-act="rate" data-r="1">Good</button>
+      <button class="btn" data-act="rate" data-r="2">Easy</button>
+    </div>
+    <p class="hint" ${view.flipped ? 'hidden' : ''}>Click the card or press space to flip it. Then rate it with 1, 2, or 3.</p>
+  </div>`;
+}
+
+function flip() {
+  view.flipped = !view.flipped;
+  $('.flip').classList.toggle('flipped', view.flipped);
+  $('.rate').hidden = !view.flipped;
+  $('.hint').hidden = view.flipped;
+}
+
+function rate(r) {
+  const id = view.queue.shift();
+  const c = S.cards.find(x => x.id === id);
+  if (r === 0) {
+    c.level = 0;
+    c.dueAt = Date.now();
+    view.queue.push(id);
+  } else {
+    c.level = Math.min(5, c.level + (r === 2 ? 2 : 1));
+    c.dueAt = Date.now() + INTERVALS[c.level] * DAY;
+  }
+  view.reviewed++;
+  view.flipped = false;
+  bumpStreak();
+  save();
+  render();
+}
+
+/* focus timer */
+
+const LEN = { focus: 25 * 60, break: 5 * 60 };
+const T = { mode: 'focus', left: LEN.focus, running: false, iv: null };
+const mmss = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+
+function vFocus() {
+  return `<div class="focus">
+    <h1 class="page-title">Focus timer</h1>
+    <p class="muted">Work for 25 minutes, then take 5. Each finished focus session counts toward your streak.</p>
+    <div class="seg" role="group" aria-label="Timer mode">
+      <button data-act="mode" data-m="focus" class="${T.mode === 'focus' ? 'on' : ''}">Focus</button>
+      <button data-act="mode" data-m="break" class="${T.mode === 'break' ? 'on' : ''}">Break</button>
+    </div>
+    <div class="timer" id="timer">${mmss(T.left)}</div>
+    <div class="actions center">
+      <button class="btn" data-act="timer">${T.running ? 'Pause' : 'Start'}</button>
+      <button class="btn ghost" data-act="reset">Reset</button>
+    </div>
+    <p class="muted">${plural(S.focusSessions, 'focus session')} completed</p>
+  </div>`;
+}
+function setMode(m) { T.mode = m; T.left = LEN[m]; }
+function startTimer() { if (T.running) return; T.running = true; T.iv = setInterval(tick, 1000); }
+function stopTimer() { T.running = false; clearInterval(T.iv); document.title = 'NeuroNudge'; }
+function tick() {
+  T.left--;
+  if (T.left <= 0) {
+    beep();
+    stopTimer();
+    if (T.mode === 'focus') {
+      S.focusSessions++;
+      bumpStreak();
+      save();
+      toast('Focus session done. Take a break.');
+      setMode('break');
+    } else {
+      toast('Break over. Back to it.');
+      setMode('focus');
+    }
+    if (view.name === 'focus') render();
+    return;
+  }
+  const el = $('#timer');
+  if (el) el.textContent = mmss(T.left);
+  document.title = mmss(T.left) + ' NeuroNudge';
+}
+function beep() {
+  try {
+    const a = new (window.AudioContext || window.webkitAudioContext)();
+    const o = a.createOscillator(), g = a.createGain();
+    o.connect(g); g.connect(a.destination);
+    o.frequency.value = 880;
+    g.gain.setValueAtTime(0.2, a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.8);
+    o.start(); o.stop(a.currentTime + 0.8);
+  } catch (e) {}
+}
+
+/* misc */
+
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function isDark() {
+  return S.theme ? S.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function applyTheme() {
+  if (S.theme) document.documentElement.dataset.theme = S.theme;
+  else delete document.documentElement.dataset.theme;
+}
+function toggleTheme() {
+  S.theme = isDark() ? 'light' : 'dark';
+  save();
+  applyTheme();
+  render();
+}
+
+function sample() {
+  const mk = (name, color) => ({ id: uid(), name, color });
+  const stats = mk('Intro to Statistics', COLORS[3]);
+  const writing = mk('Writing 101', COLORS[0]);
+  const prog = mk('Intro to Programming', COLORS[2]);
+  const at = (days, h) => dayKey(new Date(Date.now() + days * DAY)) + 'T' + String(h).padStart(2, '0') + ':00';
+  S.classes = [stats, writing, prog];
+  S.assignments = [
+    { id: uid(), classId: stats.id, title: 'Problem set 3', due: at(1, 23), done: false },
+    { id: uid(), classId: writing.id, title: 'Essay draft', due: at(3, 17), done: false },
+    { id: uid(), classId: prog.id, title: 'Project 1: Calculator', due: at(6, 23), done: false },
+    { id: uid(), classId: stats.id, title: 'Lab 2 quiz', due: at(-1, 10), done: true }
+  ];
+  const deck = { id: uid(), name: 'Stats midterm terms', classId: stats.id };
+  S.decks = [deck];
+  S.cards = [
+    ['Mean', 'The average of all values'],
+    ['Median', 'The middle value when the data is sorted'],
+    ['Standard deviation', 'How spread out values are from the mean'],
+    ['p-value', 'How likely results this extreme are if the null hypothesis is true']
+  ].map(([front, back]) => ({ id: uid(), deckId: deck.id, front, back, level: 0, dueAt: Date.now() }));
+  save();
+  toast('Sample data loaded');
+  render();
+}
+
+const VIEWS = { dash: vDash, classes: vClasses, class: vClass, decks: vDecks, deck: vDeck, study: vStudy, focus: vFocus };
+const TAB = { dash: 'dash', classes: 'classes', class: 'classes', decks: 'decks', deck: 'decks', study: 'decks', focus: 'focus' };
+
+function render() {
+  $('#main').innerHTML = VIEWS[view.name]();
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.to === TAB[view.name]));
+  const btn = $('#themeBtn');
+  btn.textContent = isDark() ? '☀️' : '🌙';
+  btn.setAttribute('aria-label', isDark() ? 'Switch to light mode' : 'Switch to dark mode');
+}
+function nav(v) {
+  view = v;
+  render();
+  window.scrollTo(0, 0);
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const { act, id } = el.dataset;
+  switch (act) {
+    case 'go': nav({ name: el.dataset.to }); break;
+    case 'sample': sample(); break;
+    case 'openClass': nav({ name: 'class', id }); break;
+    case 'openDeck': nav({ name: 'deck', id }); break;
+    case 'toggle': {
+      const a = S.assignments.find(x => x.id === id);
+      a.done = !a.done;
+      if (a.done) toast('Nice, one less thing');
+      save(); render();
+      break;
+    }
+    case 'delAssign':
+      S.assignments = S.assignments.filter(x => x.id !== id);
+      save(); render();
+      break;
+    case 'delClass':
+      if (confirm('Delete this class and its assignments?')) {
+        S.assignments = S.assignments.filter(a => a.classId !== id);
+        S.decks.forEach(d => { if (d.classId === id) d.classId = ''; });
+        S.classes = S.classes.filter(c => c.id !== id);
+        save(); nav({ name: 'classes' });
+      }
+      break;
+    case 'delDeck':
+      if (confirm('Delete this deck and all its cards?')) {
+        S.cards = S.cards.filter(c => c.deckId !== id);
+        S.decks = S.decks.filter(d => d.id !== id);
+        save(); nav({ name: 'decks' });
+      }
+      break;
+    case 'delCard':
+      S.cards = S.cards.filter(c => c.id !== id);
+      save(); render();
+      break;
+    case 'study': startStudy(id); break;
+    case 'studyAll': startStudy(id, true); break;
+    case 'flip': flip(); break;
+    case 'rate': rate(Number(el.dataset.r)); break;
+    case 'mode': stopTimer(); setMode(el.dataset.m); render(); break;
+    case 'timer': T.running ? stopTimer() : startTimer(); render(); break;
+    case 'reset': stopTimer(); setMode(T.mode); render(); break;
+    case 'theme': toggleTheme(); break;
+    case 'wipe':
+      if (confirm('Erase all your classes, assignments, and flashcards?')) {
+        const theme = S.theme;
+        S = blank();
+        S.theme = theme;
+        save(); nav({ name: 'dash' });
+      }
+      break;
+  }
+});
+
+document.addEventListener('submit', e => {
+  const f = e.target;
+  const kind = f.dataset.form;
+  if (!kind) return;
+  e.preventDefault();
+  const v = Object.fromEntries(new FormData(f));
+  const clean = s => (s || '').trim();
+
+  if (kind === 'addClass') {
+    if (!clean(v.name)) return;
+    S.classes.push({ id: uid(), name: clean(v.name), color: v.color || COLORS[0] });
+    toast('Class added');
+  }
+  if (kind === 'addAssign' || kind === 'quickAdd') {
+    if (!clean(v.title) || !v.due) return;
+    S.assignments.push({ id: uid(), classId: f.dataset.class || v.classId, title: clean(v.title), due: v.due, done: false });
+    toast('Assignment added');
+  }
+  if (kind === 'addDeck') {
+    if (!clean(v.name)) return;
+    const d = { id: uid(), name: clean(v.name), classId: v.classId || '' };
+    S.decks.push(d);
+    save();
+    toast('Deck created');
+    nav({ name: 'deck', id: d.id });
+    return;
+  }
+  if (kind === 'addCard') {
+    if (!clean(v.front) || !clean(v.back)) return;
+    S.cards.push({ id: uid(), deckId: f.dataset.deck, front: clean(v.front), back: clean(v.back), level: 0, dueAt: Date.now() });
+    save(); render();
+    const front = $('#f');
+    if (front) front.focus();
+    toast('Card added');
+    return;
+  }
+  save(); render();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('textarea') && (e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    e.target.form.requestSubmit();
+    return;
+  }
+  if (view.name !== 'study' || e.target.matches('input, textarea, select, button')) return;
+  if ((e.key === ' ' || e.key === 'Enter') && $('.flip')) {
+    e.preventDefault();
+    flip();
+  }
+  if (view.flipped && ['1', '2', '3'].includes(e.key)) rate(Number(e.key) - 1);
+});
+
+setInterval(() => {
+  if (view.name !== 'dash') return;
+  const el = $('#countdown');
+  if (!el) return;
+  if (new Date(el.dataset.due) <= Date.now()) render();
+  else el.innerHTML = countdown(el.dataset.due);
+}, 30000);
+
+applyTheme();
+render();
+</script>
+</body>
+</html>
